@@ -2,6 +2,7 @@ import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 from dotenv import load_dotenv
 import os
+import csv
 
 class SpotifyClient:
     def __init__(self):
@@ -78,18 +79,42 @@ class SpotifyClient:
         """플레이리스트에서 노래 가져오기"""
         print(f"\nTracks in Playlist {name}:")
         tracks = self.sp.playlist_items(playlist_id)
+        playlist_tracks = []
         while tracks:
             for item in tracks['items']:
                 track = item['track']
-                print(f"Track Name: {track['name']}, Artist(s): {', '.join(artist['name'] for artist in track['artists'])}")
+                if track:  # Check if track exists
+                    track_name = track['name']
+                    artist_names = ", ".join(artist['name'] for artist in track['artists'])
+                    playlist_tracks.append({"Playlist Name": name, "Track Name": track_name, "Artists": artist_names})
             tracks = self.sp.next(tracks) if tracks['next'] else None
+        return playlist_tracks
         
-    def playlists_to_table(self, playlists):
-        """테이블로 만드는 함수 추가"""
-        # 아직 테이블이 없으니 일단 함수만 구현함
-        for name,id in playlists:
-            spotipy_client.get_playlist_tracks(name,id)
-        
+    # def playlists_to_table(self, playlists):
+    #     """테이블로 만드는 함수 추가"""
+    #     # 아직 테이블이 없으니 일단 함수만 구현함
+    #     for name,id in playlists:
+    #         spotipy_client.get_playlist_tracks(name,id)
+    
+    def playlists_to_table(self, playlists, output_file="data/playlists.csv"):
+        """플레이리스트 데이터를 CSV로 저장"""
+        # 아직 테이블이 없어서 csv로 잘 만들어지는 지 확인
+        # 나중에는 테이블로 연결되도록 만들면 될 듯
+        all_tracks = []
+
+        for name, playlist_id in playlists:
+            # Fetch tracks for each playlist
+            tracks = self.get_playlist_tracks(name, playlist_id)
+            all_tracks.extend(tracks)
+
+        # Save to CSV
+        with open(output_file, mode="w", newline="", encoding="utf-8") as file:
+            writer = csv.DictWriter(file, fieldnames=["Playlist Name", "Track Name", "Artists"])
+            writer.writeheader()
+            writer.writerows(all_tracks)
+
+        print(f"CSV file created: {output_file}")
+
         
         
 if __name__ == "__main__":
@@ -98,8 +123,11 @@ if __name__ == "__main__":
     featured_playlists = spotipy_client.get_featured_playlists()
     categories_playlists = spotipy_client.get_category_playlists()
     
-    spotipy_client.playlists_to_table(user_playlists)
-    spotipy_client.playlists_to_table(featured_playlists)
-    for key, val in categories_playlists.items():
-        spotipy_client.playlists_to_table(key,val)
+    spotipy_client.playlists_to_table(user_playlists, output_file="data/user_playlists.csv")
+    spotipy_client.playlists_to_table(featured_playlists, output_file="data/featured_playlists.csv")
+    for category_name, playlists in categories_playlists.items():
+        output_file = f"data/{category_name}_playlists.csv"
+        spotipy_client.playlists_to_table(playlists, output_file=output_file)
     
+    
+
