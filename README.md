@@ -4,7 +4,7 @@
 ## 가져오는 목록
 1. user_playlists
 2. featured_playlists
-3. category_playlists
+3. category_playlists >> 2024-11-22 13:15 현재 가져올때 에러를 만들어내고 있음. 
 -------------------
 
 ## 선수 사항

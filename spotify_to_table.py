@@ -62,22 +62,24 @@ class SpotifyClient:
         categories_list= []
         for category in categories['categories']['items']:
             categories_list.append([category['name'],category['id']])
-        print(categories_list)
         return categories_list
     
     def get_category_playlists(self):
         """catrgoy_id list 가져와서 카테고리 플레이리스트 가져오기"""
         categories_list = self.list_categories()
         categories_playlists = {}
-        for name,id in categories_list:
-            print(f"\nPlaylists for Category {name}:")
+        
+        for category_name,category_id in categories_list: #카테고리 아이디에서 플레이리스트 뽑아오기
+            print(f"\nPlaylists for Category {category_name}:")
             category_playlist = []
-            playlists = self.sp.category_playlists(category_id=id)
-            for playlist in playlists['playlists']['items']:
+            playlists = self.sp.category_playlists(category_id=category_id)
+            
+            for playlist in playlists['playlists']['items']: # 뽑아온 플레이리스트에서 아이템 가져오기
+                print(playlist)
                 print(f"Name: {playlist['name']}, ID: {playlist['id']}")
                 if playlist['name']:
-                    category_playlist.append([name, id])
-            categories_playlists[name] = category_playlist
+                    category_playlist.append([playlist['name'], playlist['id']])
+            categories_playlists[category_name] = category_playlist
         return categories_playlists
     
     def validate_playlist(self, playlist_id):
@@ -108,6 +110,7 @@ class SpotifyClient:
         except spotipy.exceptions.SpotifyException as e:
             logging.error(f"Error fetching playlist {name} (ID: {playlist_id}): {e}")
             return []
+        
         
     
     def playlists_to_table(self, playlists, output_file="data/playlists.csv"):
@@ -141,7 +144,9 @@ if __name__ == "__main__":
     spotipy_client.playlists_to_table(featured_playlists, output_file="data/featured_playlists.csv")
     for category_name, playlists in categories_playlists.items():
         output_file = f"data/{category_name}_playlists.csv"
-        spotipy_client.playlists_to_table(playlists, output_file=output_file)
+        for playlist in playlists:
+            print(playlist)
+            spotipy_client.playlists_to_table([category_name,playlist], output_file=output_file)
     
     
 
