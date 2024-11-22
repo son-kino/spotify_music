@@ -2,3 +2,8 @@
 venv
 .cache
 test_category.py
+src
+main.js
+style.css
+youtube_test.html
+test.html

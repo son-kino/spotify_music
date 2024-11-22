@@ -56,9 +56,12 @@ class SpotifyClient:
             print(f"  Album Cover: {album_cover_url}")
             print()
 
+            
 
 if __name__ == '__main__':
     # 사용자로부터 노래 제목 입력받기
     spotipy_client = SpotifyClient()
     song_title = input("Enter song title: ")
     spotipy_client.get_recommendations(song_title)
+
+
