@@ -131,9 +131,6 @@ class SpotifyClient:
             writer.writerows(all_tracks)
 
         print(f"CSV file created: {output_file}")
-
-        
-        
 if __name__ == "__main__":
     spotipy_client = SpotifyClient()
     user_playlists = spotipy_client.get_user_playlists()
