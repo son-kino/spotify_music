@@ -3,10 +3,14 @@ from spotipy.oauth2 import SpotifyOAuth
 from dotenv import load_dotenv
 import os
 import csv
+import logging
+
+# 로깅 설정
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 class SpotifyClient:
     def __init__(self):
-        # Load environment variables
+        """ 환경 변수 가져오기 """
         load_dotenv()
 
         client_id = os.getenv("CLIENT_ID")
@@ -27,7 +31,7 @@ class SpotifyClient:
 
     def get_user_playlists(self):
         """사용자의 스포티파이 플레이리스트 가져오기"""
-        # 이 부분은 추후 사용자가 넣은 플레이르스트로 수정하거나 제거할 필요 있음
+        # 이 부분은 추후 사용자가 넣은 플레이리스트트로 수정하거나 제거할 필요 있음
         print("\nUser Playlists:")
         playlists = self.sp.current_user_playlists()
         user_playlists = []
@@ -58,6 +62,7 @@ class SpotifyClient:
         categories_list= []
         for category in categories['categories']['items']:
             categories_list.append([category['name'],category['id']])
+        print(categories_list)
         return categories_list
     
     def get_category_playlists(self):
@@ -74,27 +79,36 @@ class SpotifyClient:
                     category_playlist.append([name, id])
             categories_playlists[name] = category_playlist
         return categories_playlists
-        
+    
+    def validate_playlist(self, playlist_id):
+        """플레이리스트 ID 유효성 검사"""
+        try:
+            self.sp.playlist(playlist_id)  # 해당 플레이리스트 정보 요청
+            return True
+        except spotipy.exceptions.SpotifyException:
+            logging.warning(f"Invalid playlist ID: {playlist_id}")
+            return False    
+    
     def get_playlist_tracks(self, name, playlist_id):
         """플레이리스트에서 노래 가져오기"""
-        print(f"\nTracks in Playlist {name}:")
-        tracks = self.sp.playlist_items(playlist_id)
-        playlist_tracks = []
-        while tracks:
-            for item in tracks['items']:
-                track = item['track']
-                if track:  # Check if track exists
-                    track_name = track['name']
-                    artist_names = ", ".join(artist['name'] for artist in track['artists'])
-                    playlist_tracks.append({"Playlist Name": name, "Track Name": track_name, "Artists": artist_names})
-            tracks = self.sp.next(tracks) if tracks['next'] else None
-        return playlist_tracks
+        logging.info(f"Fetching tracks for playlist: {name} (ID: {playlist_id})")
+        try:
+            tracks = self.sp.playlist_items(playlist_id)
+            playlist_tracks = []
+            while tracks:
+                for item in tracks['items']:
+                    track = item['track']
+                    if track:  # Check if track exists
+                        track_name = track['name']
+                        artist_names = ", ".join(artist['name'] for artist in track['artists'])
+                        logging.debug(f"Track: {track_name}, Artists: {artist_names}")
+                        playlist_tracks.append({"Playlist Name": name, "Track Name": track_name, "Artists": artist_names})
+                tracks = self.sp.next(tracks) if tracks['next'] else None
+            return playlist_tracks
+        except spotipy.exceptions.SpotifyException as e:
+            logging.error(f"Error fetching playlist {name} (ID: {playlist_id}): {e}")
+            return []
         
-    # def playlists_to_table(self, playlists):
-    #     """테이블로 만드는 함수 추가"""
-    #     # 아직 테이블이 없으니 일단 함수만 구현함
-    #     for name,id in playlists:
-    #         spotipy_client.get_playlist_tracks(name,id)
     
     def playlists_to_table(self, playlists, output_file="data/playlists.csv"):
         """플레이리스트 데이터를 CSV로 저장"""
