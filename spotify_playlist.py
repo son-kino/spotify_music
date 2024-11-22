@@ -48,8 +48,18 @@ class SpotifyClient:
         
         print(f"Playlists containing '{track['name']}':")
         for idx, playlist in enumerate(playlists['playlists']['items'], 1):
+            # 플레이리스트 커버 이미지 가져오기
+            playlist_name = playlist['name']
+            playlist_url = playlist['external_urls']['spotify']
+            playlist_cover_url = playlist['images'][0]['url'] if playlist['images'] else 'No image available'
+            
+            print(f"{idx}. {playlist_name} - {playlist_url}")
+            print(f"   Cover Image: {playlist_cover_url}")
+        '''
+        for idx, playlist in enumerate(playlists['playlists']['items'], 1):
             print(f"{idx}. {playlist['name']} - {playlist['external_urls']['spotify']}")
-
+        '''
+            
 if __name__ == '__main__':
     spotipy_client = SpotifyClient()
     song_title = input("Enter song title: ")

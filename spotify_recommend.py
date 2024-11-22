@@ -47,9 +47,15 @@ class SpotifyClient:
         print(f"\nRecommended songs based on '{track['name']}':\n")
         
         for idx, rec in enumerate(recommendations['tracks'], 1):
+            # 앨범 커버 이미지 URL
+            album_cover_url = rec['album']['images'][0]['url']
+            
             print(f"{idx}. {rec['name']} by {', '.join(artist['name'] for artist in rec['artists'])}")
+            print(f"  Album: {rec['album']['name']}")
             print(f"  Spotify URL: {rec['external_urls']['spotify']}")
+            print(f"  Album Cover: {album_cover_url}")
             print()
+
 
 if __name__ == '__main__':
     # 사용자로부터 노래 제목 입력받기
