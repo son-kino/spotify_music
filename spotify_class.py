@@ -75,3 +75,25 @@ class SpotifyClient:
             playlist_data.append(playlist_info)
 
         return playlist_data
+    
+    def get_top_10_playlists(self):
+        # 'Top'이라는 키워드로 플레이리스트 검색
+        results = self.sp.search(q="Top", type='playlist', limit=10)
+
+        if not results['playlists']['items']:
+            print("No playlists found.")
+            return
+
+        print(f"Top 10 playlists:")
+        today_playlists_data = []
+        for idx, playlist in enumerate(results['playlists']['items'], 1):
+            playlist_name = playlist['name']
+            playlist_url = playlist['external_urls']['spotify']
+            playlist_cover_url = playlist['images'][0]['url'] if playlist['images'] else 'No image available'
+            playlist_info = {
+                "title": playlist_name,
+                "link": playlist_url,
+                "cover_image": playlist_cover_url
+            }
+            today_playlists_data.append(playlist_info)
+        return today_playlists_data
